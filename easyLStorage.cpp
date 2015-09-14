@@ -106,7 +106,7 @@ boolean easyLStorage::deleteData(){
     if (DB) {
         DB.seek(i);
         Serial.print(".");
-        DB.print("\b");
+        DB.print("\b"); //write backspace
         DB.close(); // close the file:
         delay(10);
     }else {

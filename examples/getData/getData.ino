@@ -7,10 +7,6 @@ int count = 0;
 void setup() {
   Serial.begin(9600);
   sd.start();  //Starts the SD Card
-<<<<<<< HEAD
-=======
-
->>>>>>> FETCH_HEAD
 }
 
 void loop() {
