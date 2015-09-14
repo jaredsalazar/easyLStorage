@@ -9,7 +9,7 @@ public:
   easyLStorage();
   boolean start();
   String getData();
-  boolean deleteLine();
+  boolean deleteData();
   boolean cacheData(String data);
 };
 

@@ -5,7 +5,8 @@
 
 #define SDCARD LSD // use SD card DRIVE
 LFile DB;
-String Data = ""; // a string to hold incoming data From DB.TXT
+char _FILE[] = "DB.txt"; // filename with .txt extension
+char c;
 
 
 easyLStorage::easyLStorage()
@@ -24,59 +25,92 @@ boolean easyLStorage::start(){
 }
 
 String easyLStorage::getData(){
- DB = SDCARD.open("DB.TXT");
-  if (DB) {                                // Open DB.TXT
-    while (Serial.available()) {           // Loop while DB.TXT is connected
-      char inChar = (char)DB.read();       // get the new byte/character
-      Data += inChar;                      // add it to the string data
-      if (inChar == '\n')                  // if the incoming character is a newline,
-      {
-      break;
-      }                             // the looping will stop getting character
-    }
-    Serial.print(Data);                    //Print the Combined Searched Character
-    return Data;                          //Send the String
-    DB.close();                            //Close DB.TXT
-  }else{
-    Serial.println("ERROR GETTING DATA!"); // if the file didn't open, print an error:
-  }
-}
-
-boolean easyLStorage::deleteLine(){
-   DB = SDCARD.open("DB.TXT",FILE_WRITE);    // OPEN the DATA.TXT and set it to WRITE MODE
-  if (DB){
-    DB.seek(0);                             // move the cursor at the beginning of the value
-    while (Serial.available()) {
-      char inChar = (char)DB.read();        // get the new byte/charater
-      Serial.print(inChar);                 // print the character
-      if (inChar == '}'){                   // condition for the incoming charater is '{'
-        DB.seek(DB.position());             // Set the cursor into the current position
-        for (int d = DB.position();d>0;d--){// Loop while Cursor Position is not in the beginning of DB.TXT
-          DB.print((char)8);                // Print Charater 8(BackSpace) in the DB.TXT
-          if(DB.position() == 0){           // Stop Printing if the Cursor Position is in the beginning of DB.TXT
-            Serial.println("Line Deleted!");
-            return true;
+  String _DATA = "";
+    DB = SDCARD.open(_FILE); // re-open the file for reading:
+    if (DB) {
+        DB.seek(0);
+        // read from the file until there's nothing else in it:
+        while (DB.available()) {
+          c = DB.read();
+          if(c == '\n'){
             break;
           }
+          if(c != '\b'){
+            _DATA += c;
+          }
         }
-        break;
-      }
+        // close the file:
+        DB.close();
+    } else {
+        // if the file didn't open, print an error:
+        Serial.println("error opening txt file" );
     }
-    DB.close();
-  } else {
-   Serial.print("ERROR DELETING!");   //Print Error if the DATA.TXT did not open
-   return false;
-  }
+    if(_DATA == ""){
+      Serial.println("No Data..." );
+    }
+    return _DATA;
 }
 
-boolean easyLStorage::cacheData(String data){
-   DB = SDCARD.open("DB.TXT", FILE_WRITE); //OPEN the DATA.TXT and set it to WRITE MODE
-  if (DB) {
-    DB.println(data);                       //Write the DATA in DATA.TXT
-    DB.close();                             //Close the DATA.TXT
-    return true;
-  } else {
-   Serial.print("ERROR CACHING!");          //Print Error if the DATA.TXT did not open
-   return false;
+boolean easyLStorage::cacheData(String _SDATA){
+  // open the file. note that only one file can be open at a time,
+    // so you have to close this one before opening another.
+    DB = SDCARD.open(_FILE, FILE_WRITE);
+
+    // if the file opened okay, write to it:
+    if (DB) {
+        Serial.print("Caching....");
+        DB.println(_SDATA);
+        Serial.println(_SDATA);
+        DB.close(); // close the file:
+        Serial.println("done.");
+    } else {
+
+        Serial.println("error opening txt file" ); // if the file didn't open, print an error:
+    }
+}
+
+boolean easyLStorage::deleteData(){
+  ///Preparation and Counting Part///
+  int _index = 0;
+    DB = SDCARD.open(_FILE); // re-open the file for reading:
+    if (DB) {
+        DB.seek(0);
+        // read from the file until there's nothing else in it:
+        while (DB.available()) {
+          c = DB.read();
+          if(c == '\n'){
+            _index++;
+            Serial.println("# of Characters " + (String) _index);
+            break;
+          }
+          _index++;
+        }
+        // close the file:
+        DB.close();
+    } else {
+        // if the file didn't open, print an error:
+        Serial.println("error opening txt file" );
+        return false;
+    }
+
+    ///Deleting Part///
+    for(int i = 0; i < _index; i++){
+  // open the file. note that only one file can be open at a time,
+    // so you have to close this one before opening another.
+    DB = SDCARD.open(_FILE, FILE_WRITE);
+
+    // if the file opened okay, write to it:
+    if (DB) {
+        DB.seek(i);
+        Serial.print(".");
+        DB.print("\b");
+        DB.close(); // close the file:
+        delay(10);
+    }else {
+      Serial.println("error opening txt file" ); // if the file didn't open, print an error:
+      return false;
+    }
   }
+  Serial.print("Deleting Success");
+  return true;
 }
