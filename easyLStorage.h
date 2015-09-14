@@ -11,6 +11,7 @@ public:
   String getData();
   boolean deleteData();
   boolean cacheData(String data);
+  void data();
 };
 
 #endif
