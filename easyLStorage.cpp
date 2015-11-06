@@ -128,15 +128,20 @@ boolean easyLStorage::deleteData(){
     ///Writing///
     if (DB) {
         //Serial.println("Caching....");
-        DB.println(_DATA);
-        //Serial.println(_DATA);
-        DB.close(); // close the file:
-        Serial.println("done.");
+        DB.seek(0);
+        if(_DATA != ""){
+          DB.println(_DATA);
+          //Serial.println(_DATA);
+          DB.close(); // close the file:
+          Serial.print("Deleting Success");
+        }
+        else{
+          Serial.println("Nothing to Delete" );
+      }
     } else {
         Serial.println("error opening txt file" ); // if the file didn't open, print an error:
     }
 
   DB.close();
-  Serial.print("Deleting Success");
   return true;
 }
