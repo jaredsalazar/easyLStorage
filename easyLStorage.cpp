@@ -2,11 +2,13 @@
 #include "LSD.h"
 #include "LStorage.h"
 #include "Arduino.h"
+#include <cstring>
+#include <string>
 
 #define SDCARD LSD // use SD card DRIVE
 LFile DB;
 
-char _FILE[] = "DB.txt"; // filename with .txt extension
+
 char c;
 
 
@@ -14,19 +16,23 @@ easyLStorage::easyLStorage()
 {
 
 }
-boolean easyLStorage::start(){
+boolean easyLStorage::start(String _name){
    Serial.println("LOADING SD CARD...");  //to check the SD Card
   if (!SDCARD.begin()){
     Serial.print("SD FAILED!"); //the Codes will stop if SD CARD Failed
     return false;
   }else{
+    char _FILE[_name.length()]; // filename with .txt extension
+    strcpy(_FILE, _name.c_str());
     Serial.print("SD OK!\n");
     return true;
   }
 }
 
-String easyLStorage::getData(){
+String easyLStorage::getData(String _name){
   String _DATA = "";
+  char _FILE[_name.length()]; // filename with .txt extension
+  strcpy(_FILE, _name.c_str());
 
     DB = SDCARD.open(_FILE); // re-open the file for reading:
     if (DB) {
@@ -35,7 +41,6 @@ String easyLStorage::getData(){
         while (DB.available()) {
           c = DB.read();
           if(c == '\n'){
-
             break;
           }
           if(c != '\b'){
@@ -54,7 +59,11 @@ String easyLStorage::getData(){
     return _DATA;
 }
 
-boolean easyLStorage::cacheData(String _SDATA){
+boolean easyLStorage::cacheData(String _SDATA,String _name){
+
+  char _FILE[_name.length()]; // filename with .txt extension
+  strcpy(_FILE, _name.c_str());
+
   // open the file. note that only one file can be open at a time,
     // so you have to close this one before opening another.
     DB = SDCARD.open(_FILE, FILE_WRITE);
@@ -72,7 +81,11 @@ boolean easyLStorage::cacheData(String _SDATA){
     }
 }
 
-boolean easyLStorage::deleteData(){
+boolean easyLStorage::deleteData(String _name){
+
+  char _FILE[_name.length()]; // filename with .txt extension
+  strcpy(_FILE, _name.c_str());
+  
   ///Preparation and Counting Part///
   int _index = 0;
     DB = SDCARD.open(_FILE); // re-open the file for reading:
@@ -123,14 +136,14 @@ boolean easyLStorage::deleteData(){
 
     ///Re-Create File///
     //Serial.println("Re-Create file...");
-    DB = SDCARD.open(_FILE,FILE_WRITE);
+    DB = SDCARD.open(_FILE, FILE_WRITE);
 
     ///Writing///
     if (DB) {
         //Serial.println("Caching....");
         DB.seek(0);
         if(_DATA != ""){
-          DB.println(_DATA);
+          DB.print(_DATA);
           //Serial.println(_DATA);
           DB.close(); // close the file:
           Serial.print("Deleting Success");
